@@ -1,37 +1,47 @@
-import { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 import { authService } from "../services/authService";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const login = async (email, password) => {
-        await authService.login(email, password);
-        await getCurrentUser(); // Lấy thông tin sau khi login
-    };
-
-    const getCurrentUser = async () => {
+    // Memoize hàm getCurrentUser
+    const getCurrentUser = useCallback(async () => {
         try {
-            const response = await authService.getCurrentUser(); // Gọi API `/me`
+            const response = await authService.getCurrentUser();
             setUser({
-                fullName: response.fullName, // Lưu `fullName` từ API
+                fullName: response.fullName,
                 email: response.email,
-                balance: response.balance, // Nếu muốn sử dụng
+                balance: response.balance,
             });
         } catch (error) {
             console.error("Không tìm thấy thông tin người dùng:", error);
-            setUser(null); // Đặt user về null nếu không tìm thấy thông tin
+            setUser(null);
+        } finally {
+            setIsLoading(false);
         }
+    }, []);
+
+    // Hàm đăng nhập
+    const login = async (email, password) => {
+        await authService.login(email, password); // Gọi API đăng nhập
+        await getCurrentUser(); // Cập nhật thông tin người dùng
     };
 
+    // Hàm đăng xuất
     const logout = async () => {
-        await authService.logout();
-        setUser(null);
+        await authService.logout(); // Gọi API đăng xuất
+        setUser(null); // Xóa thông tin người dùng khỏi state
     };
+
+    useEffect(() => {
+        getCurrentUser(); // Lấy thông tin người dùng khi app khởi động
+    }, [getCurrentUser]);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, getCurrentUser }}>
+        <AuthContext.Provider value={{ user, isLoading, getCurrentUser, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

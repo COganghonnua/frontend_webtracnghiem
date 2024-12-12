@@ -16,11 +16,18 @@ const register = async (userData) => {
 };
 // Lấy thông tin người dùng hiện tại
 const getCurrentUser = async () => {
-    const response = await axios.get(`${API_URL}/me`, {
-        withCredentials: true,
-    });
-    return response.data; // Trả về thông tin user bao gồm fullName
+    try {
+        const response = await axios.get(`${API_URL}/me`, {
+            withCredentials: true,
+        });
+        console.log("Thông tin trả về từ API /me:", response.data);
+        return response.data; // Trả về thông tin user
+    } catch (error) {
+        console.error("Lỗi khi gọi API /me:", error);
+        throw error;
+    }
 };
+
 
 // Đăng xuất
 const logout = async () => {

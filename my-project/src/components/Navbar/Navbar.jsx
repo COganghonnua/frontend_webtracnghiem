@@ -1,27 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../store/authContext";
 import { useNavigate } from "react-router-dom";
-import { FaBell } from "react-icons/fa";
+import { FaBell, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaLaptop } from "react-icons/fa";
 
 const Navbar = () => {
-    const { user, getCurrentUser, logout } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                setLoading(true);
-                await getCurrentUser();
-            } catch (error) {
-                console.error("Lỗi khi lấy thông tin người dùng:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUser();
-    }, []);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         try {
@@ -33,48 +18,85 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="relative bg-white shadow-md py-4">
-            <div className="container mx-auto flex justify-between items-center px-6">
-                {/* Logo */}
-                <div
-                    className="flex items-center text-3xl gap-2 font-bold cursor-pointer"
-                    onClick={() => navigate("/")}
-                >
-                    <FaBell className="text-blue-500 animate-pulse" />
-                    <p className="text-blue-500">Trắc Nghiệm</p>
-                    <p className="text-gray-700">Online</p>
-                </div>
+        <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white bg-opacity-80 backdrop-blur-md">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 items-center justify-between">
+                    {/* Logo */}
+                    <div
+                        className="flex items-center space-x-2 cursor-pointer"
+                        onClick={() => navigate("/")}
+                    >
+                        <FaBell className="h-6 w-6 text-blue-500 animate-pulse" />
+                        <span className="text-2xl font-bold text-blue-500">Trắc Nghiệm</span>
+                        <span className="text-2xl font-bold text-gray-700">Online</span>
+                    </div>
 
-                {/* Nút Đăng nhập/Đăng xuất/Đăng ký */}
-                <div className="flex items-center gap-x-4">
-                    {loading ? (
-                        <p className="text-gray-500 animate-pulse">Đang tải...</p>
-                    ) : user ? (
-                        <>
-                            <p className="text-gray-700">Xin chào, {user.fullName}</p>
-                            <button
-                                onClick={handleLogout}
-                                className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition-all duration-300"
-                            >
-                                Đăng xuất
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                onClick={() => navigate("/login")}
-                                className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300"
-                            >
-                                Đăng nhập
-                            </button>
-                            <button
-                                onClick={() => navigate("/register")}
-                                className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600 transition-all duration-300"
-                            >
-                                Đăng ký
-                            </button>
-                        </>
-                    )}
+                    {/* Navigation and User Actions */}
+                    <div className="flex items-center space-x-4">
+                        {user ? (
+                            <>
+                                <button
+                                    className="hidden sm:flex items-center space-x-2 text-gray-700 hover:text-blue-500 transition-colors duration-200"
+                                    onClick={() => navigate("/classroom")}
+                                >
+                                    <FaLaptop className="h-4 w-4" />
+                                    <span>Online Class</span>
+                                </button>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        className="flex items-center space-x-2 text-gray-700 hover:text-blue-500 transition-colors duration-200"
+                                    >
+                                        <img
+                                            src={user.avatarUrl || "https://via.placeholder.com/40"}
+                                            alt={user.fullName}
+                                            className="h-8 w-8 rounded-full object-cover"
+                                        />
+                                        <span className="hidden sm:inline">{user.fullName}</span>
+                                    </button>
+                                    {isMenuOpen && (
+                                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                            <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                                                <a
+                                                    href="#"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    role="menuitem"
+                                                    onClick={() => navigate("/classroom")}
+                                                >
+                                                    Online Class
+                                                </a>
+                                                <a
+                                                    href="#"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    role="menuitem"
+                                                    onClick={handleLogout}
+                                                >
+                                                    Đăng xuất
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => navigate("/login")}
+                                    className="flex items-center space-x-2 text-gray-700 hover:text-blue-500 transition-colors duration-200"
+                                >
+                                    <FaSignInAlt className="h-4 w-4" />
+                                    <span>Đăng nhập</span>
+                                </button>
+                                <button
+                                    onClick={() => navigate("/register")}
+                                    className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200"
+                                >
+                                    <FaUserPlus className="h-4 w-4" />
+                                    <span>Đăng ký</span>
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </nav>
@@ -82,3 +104,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

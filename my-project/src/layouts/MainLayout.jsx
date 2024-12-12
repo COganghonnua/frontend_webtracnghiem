@@ -10,7 +10,7 @@ const MainLayout = () => {
             <Navbar />
 
             {/* Nội dung chính */}
-            <main className="flex-grow container mx-auto py-4">
+            <main className="flex-grow container mx-auto max-w-full px-4 py-4">
                 <Outlet />
             </main>
 
