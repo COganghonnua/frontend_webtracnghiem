@@ -112,7 +112,7 @@ const ImportQuestions = () => {
       alert("Import successful!");
       setIsLoading(false);
 
-      navigate("/questions"); // Chuyển hướng về trang Questions
+      navigate("/admin/questions"); // Chuyển hướng về trang Questions
     } catch (err) {
       console.error("Import failed:", err.response || err.message);
       if (err.response?.data) {

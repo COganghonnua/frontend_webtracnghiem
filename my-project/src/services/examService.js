@@ -54,12 +54,25 @@ export const getExamDetails = async (id) => {
     throw error.response.data;
   }
 };
-export const submitExam = async (submitData) => {
+export const submitExam = async (examId, payload) => {
   try {
-    const response = await axiosInstance.post("/check", submitData);
+    const response = await axios.post(`${BASE_URL}/${examId}/submit`, payload, {
+      withCredentials: true, // Nếu cần JWT hoặc cookie
+    });
     return response.data;
   } catch (error) {
     console.error("Error submitting exam:", error);
-    throw error.response?.data || "Error occurred during submission";
+    throw error.response?.data || "Error occurred while submitting the exam";
   }
 };
+export const getExamHistory = async (examId) => {
+  try {
+    const response = await axiosInstance.get(`/exams/${examId}/details`);
+    return response.data; // Đảm bảo dữ liệu trả về đúng cấu trúc từ API
+  } catch (error) {
+    console.error("Error fetching exam history:", error);
+    throw error.response?.data || "Error occurred while fetching exam history";
+  }
+};
+
+

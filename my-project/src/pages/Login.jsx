@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../store/authContext";
 import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { authService } from "../services/authService";
 
 const Login = () => {
   const { login } = useAuth();
@@ -17,14 +18,20 @@ const Login = () => {
     setIsLoading(true);
     setError("");
     try {
-      await login(email, password);
-      navigate("/");
+        await login(email, password);
+        const user = await authService.getCurrentUser(); // Lấy thông tin người dùng
+        if (user.roles.includes("Admin")) {
+            navigate("/admin"); // Điều hướng đến trang Admin
+        } else {
+            navigate("/"); // Điều hướng đến trang người dùng
+        }
     } catch (err) {
-      setError("Email hoặc mật khẩu không đúng!");
+        setError("Email hoặc mật khẩu không đúng!");
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100">

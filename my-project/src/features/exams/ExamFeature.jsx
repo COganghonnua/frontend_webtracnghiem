@@ -45,7 +45,7 @@ const ExamFeature = () => {
   };
 
   const handleViewExam = (examId) => {
-    navigate(`/exams/${examId}`); // Chuyển hướng sang trang làm bài thi
+    navigate(`/admin/exams/${examId}`); // Chuyển hướng sang trang làm bài thi
   };
 
   return (

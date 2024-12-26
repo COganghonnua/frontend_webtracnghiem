@@ -56,7 +56,7 @@ const CreateExam = () => {
     try {
       const result = await createExam(examData);
       setMessage("Exam created successfully!");
-      setTimeout(() => navigate("/exams"), 2000); // Chuyển về trang ExamFeature sau 2 giây
+      setTimeout(() => navigate("/admin/exams"), 2000); // Chuyển về trang ExamFeature sau 2 giây
     } catch (error) {
       setMessage(error.error || "Failed to create exam.");
     }

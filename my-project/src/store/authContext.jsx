@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
                 fullName: response.fullName,
                 email: response.email,
                 balance: response.balance,
+                roles: response.roles, // Thêm roles vào state
             });
         } catch (error) {
             console.error("Không tìm thấy thông tin người dùng:", error);
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
             setIsLoading(false);
         }
     }, []);
+    
 
     // Hàm đăng nhập
     const login = async (email, password) => {

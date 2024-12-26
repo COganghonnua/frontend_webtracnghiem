@@ -1,181 +1,139 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import {
-  getQuestionById,
-  updateQuestion,
-} from "../../services/questionsService";
-import { getSubjects } from "../../services/subjectService";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom"; // Import `useParams` và `useNavigate`
+import { getExamDetails, submitExam } from "../../services/examService";
 
-const QuestionDetail = () => {
-  const { id } = useParams();
+const ExamDetail = () => {
+  const { id } = useParams(); // Lấy `examId` từ URL
   const navigate = useNavigate();
-  const [question, setQuestion] = useState(null);
-  const [subjects, setSubjects] = useState([]);
-  const [error, setError] = useState("");
+  const [exam, setExam] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState({});
 
+  // Lấy chi tiết bài thi
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchExamDetails = async () => {
       try {
-        const [questionData, subjectsData] = await Promise.all([
-          getQuestionById(id),
-          getSubjects(),
-        ]);
-        setQuestion(questionData);
-        setSubjects(subjectsData);
+        const data = await getExamDetails(id); // Lấy dữ liệu bài thi từ API
+        setExam(data);
       } catch (error) {
-        console.error("Failed to fetch data:", error);
-        setError("Unable to load question details. Please try again later.");
+        console.error("Error fetching exam details:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchExamDetails();
   }, [id]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setQuestion({ ...question, [name]: value });
+  // Cập nhật câu trả lời khi người dùng chọn
+  const handleAnswerToggle = (questionId, answerId) => {
+    setAnswers((prev) => {
+      const currentAnswers = prev[questionId] || [];
+      if (currentAnswers.includes(answerId)) {
+        return {
+          ...prev,
+          [questionId]: currentAnswers.filter((id) => id !== answerId),
+        };
+      } else {
+        return {
+          ...prev,
+          [questionId]: [...currentAnswers, answerId],
+        };
+      }
+    });
   };
 
-  const handleAnswerChange = (index, field, value) => {
-    const updatedAnswers = [...question.answers];
-    updatedAnswers[index][field] =
-      field === "isCorrect" ? value === "true" : value;
-    setQuestion({ ...question, answers: updatedAnswers });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    // Chuẩn hóa payload
-    const payload = {
-      questionText: question.questionText, 
-      explanation: question.explanation,  
-      difficulty: parseInt(question.difficulty, 10), // Chuyển thành số
-      subjectId: parseInt(question.subjectId, 10),   // Chuyển thành số
-      answers: question.answers.map((answer) => ({
-        answerId: answer.answerId || 0,  // Nếu là đáp án mới, đặt answerId = 0
-        answerText: answer.answerText,   // Văn bản đáp án
-        isCorrect: Boolean(answer.isCorrect), // Chuyển thành boolean
-      })),
-    };
-  
-    console.log("Payload gửi đi:", JSON.stringify(payload, null, 2));
-  
+  // Gửi bài thi
+  const handleSubmit = async () => {
     try {
-      await updateQuestion(id, payload);
-      alert("Question updated successfully!");
-      navigate("/questions");
+      const payload = {
+        userAnswers: Object.entries(answers).reduce((acc, [questionId, answerIds]) => {
+          acc[questionId] = answerIds.map((id) => parseInt(id, 10)); // Chuyển ID thành số
+          return acc;
+        }, {}),
+      };
+
+      const result = await submitExam(id, payload); // Gọi API submit bài thi
+      alert(`Bài thi đã được nộp thành công! Điểm số của bạn: ${result.score}`);
+      navigate(`/admin/exams/${id}/history`); // Điều hướng về lịch sử bài thi
     } catch (error) {
-      console.error("Failed to update question:", error.response?.data || error.message);
-      setError(error.response?.data?.message || "Failed to update question.");
+      console.error("Lỗi khi gửi bài thi:", error);
+      alert(error.response?.data?.message || "Có lỗi xảy ra khi gửi bài thi.");
     }
   };
-  
 
-  if (!question) {
-    return <p>Loading...</p>;
-  }
+  // Xử lý chuyển câu hỏi
+  const handleQuestionJump = (index) => {
+    setCurrentQuestionIndex(index);
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (!exam) return <div>Exam not found</div>;
+
+  const currentQuestion = exam.questions[currentQuestionIndex];
 
   return (
-    <div className="p-5 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Question Detail</h1>
-      {error && <p className="text-red-500">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700">Question Text</label>
-          <input
-            type="text"
-            name="questionText"
-            value={question.questionText}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Explanation</label>
-          <textarea
-            name="explanation"
-            value={question.explanation}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            rows="3"
-            required
-          ></textarea>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Difficulty</label>
-          <select
-            name="difficulty"
-            value={question.difficulty}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-          >
-            <option value="1">Easy</option>
-            <option value="2">Medium</option>
-            <option value="3">Hard</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Subject</label>
-          <select
-            name="subjectId"
-            value={question.subjectId}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            required
-          >
-            {subjects.map((subject) => (
-              <option key={subject.subjectId} value={subject.subjectId}>
-                {subject.subjectName}
-              </option>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">{exam.examName}</h1>
+
+        {/* Hiển thị câu hỏi */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">
+            Câu {currentQuestionIndex + 1}: {currentQuestion.questionText}
+          </h2>
+          <ul>
+            {currentQuestion.answers.map((answer) => (
+              <li key={answer.answerId} className="mb-2">
+                <label
+                  className={`flex items-center p-4 border rounded-lg cursor-pointer ${
+                    (answers[currentQuestion.questionId] || []).includes(answer.answerId)
+                      ? "bg-blue-100 border-blue-600"
+                      : "bg-white border-gray-300"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={(answers[currentQuestion.questionId] || []).includes(answer.answerId)}
+                    onChange={() => handleAnswerToggle(currentQuestion.questionId, answer.answerId)}
+                    className="mr-3"
+                  />
+                  {answer.answerText}
+                </label>
+              </li>
             ))}
-          </select>
+          </ul>
         </div>
-        <div className="mb-4">
-          <h3 className="text-lg font-bold">Answers</h3>
-          {question.answers.map((answer, index) => (
-            <div key={index} className="flex items-center space-x-2 mb-2">
-              <input
-                type="text"
-                value={answer.answerText}
-                onChange={(e) =>
-                  handleAnswerChange(index, "answerText", e.target.value)
-                }
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
-                required
-              />
-              <select
-                value={answer.isCorrect.toString()}
-                onChange={(e) =>
-                  handleAnswerChange(index, "isCorrect", e.target.value)
-                }
-                className="border border-gray-300 rounded-lg px-2 py-1"
-              >
-                <option value="false">False</option>
-                <option value="true">True</option>
-              </select>
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-end">
+
+        {/* Nút điều hướng */}
+        <div className="flex justify-between">
           <button
-            type="button"
-            className="bg-gray-400 text-white px-4 py-2 rounded-lg mr-2"
-            onClick={() => navigate("/questions")}
+            onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
+            disabled={currentQuestionIndex === 0}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg disabled:opacity-50"
           >
-            Cancel
+            Quay lại
           </button>
-          <button
-            type="submit"
-            className="bg-green-500 text-white px-4 py-2 rounded-lg"
-          >
-            Save Changes
-          </button>
+          {currentQuestionIndex === exam.questions.length - 1 ? (
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg"
+            >
+              Nộp bài
+            </button>
+          ) : (
+            <button
+              onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            >
+              Tiếp theo
+            </button>
+          )}
         </div>
-      </form>
+      </div>
     </div>
   );
 };
 
-export default QuestionDetail;
+export default ExamDetail;

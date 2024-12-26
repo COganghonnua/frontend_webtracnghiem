@@ -1,35 +1,54 @@
 import axios from 'axios';
 
-// Cập nhật URL base
-const API_BASE_URL = 'https://localhost:7253/api'; // URL API backend của bạn
+// Tạo một instance axios với cấu hình mặc định
+const axiosInstance = axios.create({
+  baseURL: 'https://localhost:7253/api', // URL API backend của bạn
+  withCredentials: true, // Cho phép gửi cookie kèm theo yêu cầu
+});
 
 // Lấy danh sách tất cả các topic
 export const getTopics = async () => {
-  const response = await axios.get(`${API_BASE_URL}/topics`);
-  return response.data;
+  try {
+    const response = await axiosInstance.get('/topics');
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách topic:', error);
+    throw error; // Ném lỗi để xử lý trong UI
+  }
 };
 
+// Tạo topic mới
 export const createTopic = async (data) => {
-    const response = await axios.post(`${API_BASE_URL}/topics`, data);
+  try {
+    const response = await axiosInstance.post('/topics', data);
     console.log('Topic được tạo:', response.data); // Log để kiểm tra
     return response.data;
-  };
-  
-  export const updateTopic = async (id, data) => {
-    const response = await axios.put(`${API_BASE_URL}/topics/${id}`, data);
+  } catch (error) {
+    console.error('Lỗi khi tạo topic:', error);
+    throw error; // Ném lỗi để xử lý trong UI
+  }
+};
+
+// Cập nhật topic
+export const updateTopic = async (id, data) => {
+  try {
+    const response = await axiosInstance.put(`/topics/${id}`, data);
     console.log('Topic được cập nhật:', response.data); // Log dữ liệu mới
-    return response.data; // Trả về topic đã được cập nhật
-  };
-  
-  
-  export const deleteTopic = async (id) => {
-    try {
-      const response = await axios.delete(`${API_BASE_URL}/topics/${id}`);
-      console.log('Xóa topic thành công:', response.data); // Log phản hồi từ API
-      return response.data; // Trả về phản hồi
-    } catch (error) {
-      console.error('Lỗi khi xóa topic:', error);
-      throw error; // Ném lỗi để xử lý trong UI
-    }
-  };
-  
+    return response.data;
+  } catch (error) {
+    console.error(`Lỗi khi cập nhật topic với ID ${id}:`, error);
+    throw error; // Ném lỗi để xử lý trong UI
+  }
+};
+
+// Xóa topic
+export const deleteTopic = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/topics/${id}`);
+    console.log('Xóa topic thành công:', response.data); // Log phản hồi từ API
+    return response.data;
+  } catch (error) {
+    console.error(`Lỗi khi xóa topic với ID ${id}:`, error);
+    throw error; // Ném lỗi để xử lý trong UI
+  }
+};

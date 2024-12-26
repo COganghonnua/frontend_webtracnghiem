@@ -52,8 +52,8 @@ const QuestionFeature = () => {
 
   // Điều hướng đến trang import
   const handleNavigateToImport = () => {
-    setIsChoiceModalOpen(false); // Đóng modal lựa chọn
-    navigate("/questions/import");
+    setIsChoiceModalOpen(false); // Đóng modal
+    navigate("/admin/questions/import"); // Điều hướng
   };
 
   const handleCloseModal = () => {
