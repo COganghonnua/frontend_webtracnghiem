@@ -115,4 +115,29 @@ export async function createExerciseWithNotification(roomId, exerciseData) {
         throw error;
     }
 }
-
+/**
+ * Lấy tất cả lịch sử bài tập trong một phòng học (dành cho owner).
+ * @param {number} roomId - ID phòng học.
+ */
+export async function getAllExerciseHistoriesByRoom(roomId) {
+    try {
+        const response = await axiosClient.get(`/OnlineRoom/${roomId}/exercise-histories/all`);
+        return response.data;
+    } catch (error) {
+        console.error("Lỗi khi lấy lịch sử bài tập toàn bộ lớp:", error);
+        throw error;
+    }
+};
+/**
+ * Kiểm tra xem người dùng có phải là owner của phòng hay không.
+ * @param {number} roomId - ID phòng học.
+ */
+export const checkIfOwner = async (roomId) => {
+    try {
+        const response = await axiosClient.get(`/OnlineRoom/${roomId}/is-owner`);
+        return response.data.isOwner;
+    } catch (error) {
+        console.error("Lỗi khi kiểm tra quyền owner:", error);
+        throw error;
+    }
+};

@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useParams, useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaBell, FaCog, FaBook, FaCalendar, FaTasks } from 'react-icons/fa';
 import { getUserNotifications, markNotificationAsRead } from "../../services/notificationService";
+import { checkIfOwner } from '../../services/classService';
 
 const ClassroomMainPage = () => {
     const { state } = useLocation(); // Lấy state từ navigate
     const roomName = state?.roomName || "Không rõ tên lớp"; // Dùng roomName từ state
     const { id } = useParams();
+    const [isOwner, setIsOwner] = useState(false);
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -27,6 +29,26 @@ const ClassroomMainPage = () => {
 
         fetchNotifications();
     }, []);
+
+
+    useEffect(() => {
+        if (!id) {
+            console.error("ID không tồn tại!");
+            return;
+        }
+        const fetchOwnerStatus = async () => {
+            try {
+                const result = await checkIfOwner(id); // Gọi API kiểm tra quyền owner
+                setIsOwner(result);
+            } catch (error) {
+                console.error("Lỗi khi kiểm tra quyền owner:", error);
+            }
+        };
+    
+        fetchOwnerStatus();
+    }, [id]);
+    
+    
 
     const handleNotificationClick = async (notificationId) => {
         try {
@@ -161,7 +183,7 @@ const ClassroomMainPage = () => {
                                     }
                                 >
                                     <FaTasks className="mr-3 h-5 w-5" />
-                                    <span className="font-medium">Bài tập về nhà</span>
+                                    <span className="font-medium">Lịch sử thi</span>
                                 </button>
                             </li>
                             <li>
@@ -174,6 +196,17 @@ const ClassroomMainPage = () => {
                                     <FaCalendar className="mr-3 h-5 w-5" />
                                     <span className="font-medium">Lịch học</span>
                                 </button>
+                            </li>
+                            <li>
+                               {isOwner && (
+                                    <button
+                                        onClick={() => navigate(`/classroom/${id}/exercise-histories/all`)} // Sử dụng id thay vì roomId
+                                        className="btn-primary mt-4"
+                                    >
+                                        Xem lịch sử toàn bộ lớp
+                                    </button>
+                                )}
+
                             </li>
                         </ul>
                     </div>

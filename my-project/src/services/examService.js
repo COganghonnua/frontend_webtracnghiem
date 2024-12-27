@@ -74,5 +74,16 @@ export const getExamHistory = async (examId) => {
     throw error.response?.data || "Error occurred while fetching exam history";
   }
 };
+export const checkExamEligibility = async (examId) => {
+  try {
+      const response = await axiosInstance.post(`${examId}/start`);
+      return response.data;
+  } catch (error) {
+      console.error("Error checking exam eligibility:", error);
+      throw error.response?.data || "Error occurred while checking eligibility";
+  }
+};
+
+
 
 

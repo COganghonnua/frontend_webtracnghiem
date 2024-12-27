@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../store/authContext";
 import { useNavigate } from "react-router-dom";
-import { FaBell, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaLaptop } from "react-icons/fa";
+import { FaBell, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaLaptop, FaUser } from "react-icons/fa";
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -41,6 +41,13 @@ const Navbar = () => {
                                 >
                                     <FaLaptop className="h-4 w-4" />
                                     <span>Online Class</span>
+                                </button>
+                                <button
+                                    className="hidden sm:flex items-center space-x-2 text-gray-700 hover:text-blue-500 transition-colors duration-200"
+                                    onClick={() => navigate("/profile")} // Điều hướng đến trang hồ sơ
+                                >
+                                    <FaUser className="h-4 w-4" />
+                                    <span>Hồ sơ</span>
                                 </button>
                                 <div className="relative">
                                     <button
@@ -104,4 +111,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

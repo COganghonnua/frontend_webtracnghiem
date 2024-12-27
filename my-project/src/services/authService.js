@@ -28,7 +28,16 @@ const getCurrentUser = async () => {
     }
 };
 
+const forgotPassword = async (email) => {
+    const response = await axios.post(`${API_URL}/forgot-password`, { email });
+    return response.data;
+};
 
+// Đặt lại mật khẩu
+const resetPassword = async (resetData) => {
+    const response = await axios.post(`${API_URL}/reset-password`, resetData);
+    return response.data;
+};
 // Đăng xuất
 const logout = async () => {
     await axios.post(`${API_URL}/logout`, null, { withCredentials: true });
@@ -39,4 +48,6 @@ export const authService = {
     getCurrentUser,
     register,
     logout,
+    forgotPassword,
+    resetPassword,
 };

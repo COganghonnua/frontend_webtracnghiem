@@ -45,12 +45,24 @@ const ExamFeature = () => {
   };
 
   const handleViewExam = (examId) => {
-    navigate(`/admin/exams/${examId}`); // Chuyển hướng sang trang làm bài thi
+    navigate(`/admin/exams/${examId}`); // Chuyển hướng sang trang chi tiết bài thi
+  };
+
+  const handleCreateExam = () => {
+    navigate("/admin/exams/create"); // Điều hướng sang trang tạo bài thi
   };
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Exam Management</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Exam Management</h1>
+        <button
+          onClick={handleCreateExam}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-all"
+        >
+          + Create Exam
+        </button>
+      </div>
 
       {message && <p className="text-green-500 mb-4">{message}</p>}
 
@@ -78,6 +90,7 @@ const ExamFeature = () => {
                     onBlur={(e) =>
                       handleUpdate(exam.examId, { examName: e.target.value })
                     }
+                    className="border rounded px-2 py-1"
                   />
                 ) : (
                   exam.examName
@@ -90,7 +103,7 @@ const ExamFeature = () => {
                     e.stopPropagation(); // Ngăn chặn sự kiện click vào hàng
                     setEditingExam(exam.examId);
                   }}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded mr-2"
+                  className="bg-yellow-500 text-white px-4 py-2 rounded mr-2 hover:bg-yellow-600 transition-all"
                 >
                   Edit
                 </button>
@@ -99,7 +112,7 @@ const ExamFeature = () => {
                     e.stopPropagation(); // Ngăn chặn sự kiện click vào hàng
                     handleDelete(exam.examId);
                   }}
-                  className="bg-red-500 text-white px-4 py-2 rounded"
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-all"
                 >
                   Delete
                 </button>

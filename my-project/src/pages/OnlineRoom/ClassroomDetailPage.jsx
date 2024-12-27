@@ -1,18 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import {
     getPostsByRoom,
     createPost,
-    addCommentToPost
+    addCommentToPost,
 } from "../../services/postService";
+import { checkIfOwner } from "../../services/classService"; // Import API kiểm tra quyền owner
 
 const ClassroomDetailPage = () => {
     const { state } = useLocation(); // Lấy roomName từ state
     const roomName = state?.roomName || "Tên lớp không xác định"; // Nếu không có roomName, hiển thị giá trị mặc định
     const { id } = useParams();
+    const navigate = useNavigate(); // Khởi tạo useNavigate
     const [posts, setPosts] = useState([]);
     const [newPostContent, setNewPostContent] = useState("");
     const [attachments, setAttachments] = useState([]);
+    const [isOwner, setIsOwner] = useState(false); // Thêm state để lưu trạng thái quyền owner
+
+    // Kiểm tra quyền owner
+    useEffect(() => {
+        const fetchOwnerStatus = async () => {
+            try {
+                const result = await checkIfOwner(id); // Gọi API kiểm tra quyền owner
+                setIsOwner(result); // Cập nhật trạng thái
+            } catch (error) {
+                console.error("Lỗi khi kiểm tra quyền owner:", error);
+            }
+        };
+
+        fetchOwnerStatus();
+    }, [id]);
 
     // Lấy danh sách bài viết
     useEffect(() => {
@@ -35,7 +52,7 @@ const ClassroomDetailPage = () => {
             formData.append("OnlineRoomId", id);
             formData.append("RoomName", roomName); // Truyền tên lớp
             attachments.forEach((file) => formData.append("Attachments", file));
-    
+
             const newPost = await createPost(formData); // Gửi bài viết lên server
             setPosts([newPost, ...posts]);
             setNewPostContent("");
@@ -57,10 +74,10 @@ const ClassroomDetailPage = () => {
             const newComment = await addCommentToPost(postId, { content: commentContent });
             const updatedPosts = posts.map((post) =>
                 post.postId === postId
-                    ? { 
-                        ...post, 
-                        comments: [...post.comments, newComment], 
-                        newComment: "" // Xóa nội dung khung bình luận
+                    ? {
+                          ...post,
+                          comments: [...post.comments, newComment],
+                          newComment: "", // Xóa nội dung khung bình luận
                       }
                     : post
             );
@@ -70,9 +87,25 @@ const ClassroomDetailPage = () => {
         }
     };
 
+    const handleCreateExercise = () => {
+        navigate(`/classroom/${id}/create-exercise`, { state: { roomName } }); // Điều hướng đến Create Exercise Page
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 py-6 px-4">
             <div className="max-w-3xl mx-auto space-y-6">
+                {/* Hiển thị nút "Tạo bài tập mới" chỉ nếu là owner */}
+                {isOwner && (
+                    <div className="text-right mb-4">
+                        <button
+                            onClick={handleCreateExercise}
+                            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                        >
+                            Tạo bài tập mới
+                        </button>
+                    </div>
+                )}
+
                 {/* Form tạo bài viết */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <textarea
